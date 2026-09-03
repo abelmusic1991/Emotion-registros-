@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Registro de Shows</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F6F4EE;
+    --paper: #FFFFFF;
+    --ink: #1C2521;
+    --ink-soft: #63706A;
+    --emerald: #0F6B4C;
+    --emerald-soft: #E4F0EA;
+    --brick: #B5453B;
+    --brick-soft: #F7E7E4;
+    --gold: #C89B3C;
+    --gold-soft: #F7EFDD;
+    --line: #E4E0D6;
+    --radius: 18px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+  .app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--bg);padding-bottom:40px;}
+  header{display:flex;align-items:center;justify-content:space-between;padding:22px 20px 14px;}
+  header h1{font-family:'Fraunces',serif;font-weight:600;font-size:24px;margin:0;letter-spacing:-0.01em;}
+  header .icon-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--paper);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--emerald);}
+  header .icon-btn svg{width:17px;height:17px;}
+  main{padding:0 20px;}
+
+  .clientes-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;}
+  .clientes-tabs::-webkit-scrollbar{display:none;}
+  .tab{flex-shrink:0;padding:8px 16px;border-radius:20px;font-size:13.5px;font-weight:500;cursor:pointer;border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);white-space:nowrap;}
+  .tab.activo{background:var(--emerald-soft);border-color:var(--emerald);color:var(--emerald);}
+  .tab.nueva{border-style:dashed;color:var(--ink-soft);}
+
+  .resumen{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+  .resumen .card{border-radius:14px;padding:12px 14px;}
+  .resumen .card.facturado{background:var(--paper);border:1px solid var(--line);}
+  .resumen .card.abonos{background:var(--gold-soft);}
+  .resumen .card .label{font-size:11.5px;color:var(--ink-soft);font-weight:500;}
+  .resumen .card .valor{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:18px;margin-top:2px;}
+  .resumen .card.abonos .valor{color:#8A6A1F;}
+
+  .deuda-card{background:var(--brick-soft);border-radius:14px;padding:14px 16px;margin-bottom:18px;}
+  .deuda-card .label{font-size:11.5px;color:var(--brick);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+  .deuda-card .valor{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:26px;color:var(--brick);margin-top:2px;}
+
+  .botones{display:flex;gap:8px;margin-bottom:20px;}
+  .botones button{flex:1;border:none;border-radius:12px;padding:13px 8px;font-weight:600;font-size:13.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+  .btn-agregar-show{background:var(--emerald);color:#fff;}
+  .btn-abono{background:var(--paper);border:1px solid var(--line) !important;color:var(--ink);}
+  .btn-pdf{background:var(--paper);border:1px solid var(--line) !important;color:var(--ink);}
+
+  .seccion-label{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--ink-soft);text-transform:uppercase;margin:18px 0 8px 2px;}
+
+  .lista{background:var(--paper);border-radius:var(--radius);border:1px solid var(--line);overflow:hidden;margin-bottom:8px;}
+  .mov{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--line);}
+  .mov:last-child{border-bottom:none;}
+  .mov .izq .desc{font-weight:600;font-size:14.5px;}
+  .mov .izq .meta{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .mov .izq .tags{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;}
+  .tag{font-size:10.5px;background:var(--emerald-soft);color:var(--emerald);padding:3px 8px;border-radius:10px;font-weight:500;}
+  .mov .der{display:flex;align-items:center;gap:8px;}
+  .mov .monto{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14.5px;}
+  .mov .edit,.mov .del{width:26px;height:26px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .mov .edit{color:var(--emerald);}
+  .mov .del{color:#B7ABA0;}
+
+  .subtotal-row{display:flex;justify-content:space-between;padding:0 6px 14px;font-size:13px;color:var(--ink-soft);}
+  .subtotal-row .val{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);}
+
+  .abono-mov .monto{color:var(--brick);}
+  .vacio{text-align:center;padding:40px 20px;color:var(--ink-soft);font-size:14px;}
+  .estado-carga{text-align:center;padding:30px;color:var(--ink-soft);font-size:13px;}
+
+  .overlay{position:fixed;inset:0;background:rgba(28,37,33,.45);display:none;align-items:flex-end;justify-content:center;z-index:50;}
+  .overlay.show{display:flex;}
+  .modal{background:var(--paper);width:100%;max-width:480px;border-radius:22px 22px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom));max-height:90vh;overflow-y:auto;animation:subir .25s ease;}
+  @keyframes subir{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+  .modal h2{font-family:'Fraunces',serif;font-weight:600;font-size:19px;margin:0 0 16px;}
+  .campo{margin-bottom:12px;}
+  .campo label{font-size:12px;font-weight:600;color:var(--ink-soft);display:block;margin-bottom:5px;}
+  .campo input,.campo select{width:100%;padding:12px;border-radius:11px;border:1px solid var(--line);font-family:'Inter';font-size:15px;background:var(--bg);color:var(--ink);}
+  .campo input:focus,.campo select:focus{outline:2px solid var(--emerald);outline-offset:0;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{border:1px solid var(--line);border-radius:20px;padding:7px 14px;font-size:13px;background:var(--paper);color:var(--ink);cursor:pointer;font-weight:500;}
+  .chip.activo{background:var(--emerald-soft);border-color:var(--emerald);color:var(--emerald);}
+  .chip.nueva{border-style:dashed;color:var(--ink-soft);}
+  .modal-btns{display:flex;gap:10px;margin-top:18px;}
+  .modal-btns button{flex:1;padding:14px;border-radius:12px;border:none;font-weight:600;font-size:15px;cursor:pointer;}
+  .btn-cancelar{background:var(--bg);color:var(--ink-soft);}
+  .btn-guardar{background:var(--emerald);color:#fff;}
+  .btn-guardar:disabled{opacity:.5;}
+
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:30px;font-size:13px;z-index:80;opacity:0;pointer-events:none;transition:opacity .2s;text-align:center;max-width:80%;}
+  .toast.show{opacity:1;}
+  .toast a{color:#8FE0BC;text-decoration:underline;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Mis shows</h1>
+    <button class="icon-btn" onclick="cargarDatos()" title="Actualizar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+    </button>
+  </header>
+
+  <main>
+    <div class="clientes-tabs" id="clientesTabs"></div>
+
+    <div class="resumen">
+      <div class="card facturado">
+        <div class="label">Total facturado</div>
+        <div class="valor" id="totalFacturado">$0</div>
+      </div>
+      <div class="card abonos">
+        <div class="label">Abonos recibidos</div>
+        <div class="valor" id="totalAbonos">$0</div>
+      </div>
+    </div>
+    <div class="deuda-card">
+      <div class="label" id="deudaLabel">Deuda actual</div>
+      <div class="valor" id="totalDeuda">$0</div>
+    </div>
+
+    <div class="botones">
+      <button class="btn-agregar-show" onclick="abrirModalShow()">+ Show</button>
+      <button class="btn-abono" onclick="abrirModalAbono()">+ Abono</button>
+      <button class="btn-pdf" onclick="generarPDF()" id="btnPdf">PDF</button>
+    </div>
+
+    <div id="contenidoLista">
+      <div class="estado-carga">Cargando…</div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal agregar/editar show -->
+<div class="overlay" id="overlayShow">
+  <div class="modal">
+    <h2 id="tituloModalShow">Nuevo show</h2>
+    <div class="campo">
+      <label>Fecha</label>
+      <input type="date" id="inFecha">
+    </div>
+    <div class="campo">
+      <label>Lugar</label>
+      <input type="text" id="inLugar" placeholder="Ej. Hotel Hilton Colón">
+    </div>
+    <div class="campo">
+      <label>Cliente</label>
+      <div id="chipsClientesModal" class="chips"></div>
+    </div>
+    <div class="campo">
+      <label>Detalle</label>
+      <div id="chipsDetalle" class="chips"></div>
+    </div>
+    <div class="campo">
+      <label>Tarifa total</label>
+      <input type="number" id="inTarifa" inputmode="decimal" step="0.01" placeholder="0.00">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancelar" onclick="cerrarModalShow()">Cancelar</button>
+      <button class="btn-guardar" id="btnGuardarShow" onclick="guardarShow()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal nuevo cliente -->
+<div class="overlay" id="overlayCliente">
+  <div class="modal">
+    <h2>Nuevo cliente</h2>
+    <div class="campo">
+      <label>Nombre</label>
+      <input type="text" id="inNombreCliente" placeholder="Ej. Emotion">
+    </div>
+    <div class="campo">
+      <label>Teléfono WhatsApp (opcional, con código de país)</label>
+      <input type="text" id="inTelCliente" placeholder="Ej. 593987654321">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancelar" onclick="cerrarModalCliente()">Cancelar</button>
+      <button class="btn-guardar" onclick="guardarCliente()">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal abono -->
+<div class="overlay" id="overlayAbono">
+  <div class="modal">
+    <h2>Registrar abono</h2>
+    <div class="campo">
+      <label>Cliente</label>
+      <select id="selectClienteAbono"></select>
+    </div>
+    <div class="campo">
+      <label>Fecha</label>
+      <input type="date" id="inFechaAbono">
+    </div>
+    <div class="campo">
+      <label>Monto</label>
+      <input type="number" id="inMontoAbono" inputmode="decimal" step="0.01" placeholder="0.00">
+    </div>
+    <div class="campo">
+      <label>Nota (opcional)</label>
+      <input type="text" id="inNotaAbono" placeholder="Ej. Transferencia enero">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancelar" onclick="cerrarModalAbono()">Cancelar</button>
+      <button class="btn-guardar" onclick="guardarAbono()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ⚠️ Reemplaza esta URL con la de tu implementación de Apps Script (termina en /exec)
+const API_URL = "PEGA_AQUI_TU_URL_DE_APPS_SCRIPT";
+
+const DETALLES = [
+  {id:'gye', label:'Show GYE', precio:180},
+  {id:'fuera', label:'Show fuera de la ciudad', precio:230},
+  {id:'secuencia', label:'Secuencia', precio:40},
+  {id:'edicion', label:'Edición', precio:15}
+];
+
+let clientes = [];
+let shows = [];
+let abonos = [];
+let clienteActivo = 'todos';
+let idEnEdicion = null;
+let clienteSeleccionadoModal = '';
+let detallesSeleccionados = [];
+
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+function fmtMoney(n){
+  const signo = n < 0 ? '-' : '';
+  return signo + '$' + Math.abs(n).toFixed(2).replace(/\.00$/, '');
+}
+function formatearFecha(f){
+  const [y,mo,d] = f.split('-');
+  return d + '/' + mo + '/' + y;
+}
+function mesKeyDeFecha(f){
+  const [y,mo] = f.split('-');
+  return y + '-' + mo;
+}
+
+async function cargarDatos(){
+  document.getElementById('contenidoLista').innerHTML = '<div class="estado-carga">Cargando…</div>';
+  try{
+    const res = await fetch(API_URL + '?action=list');
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'Error al leer datos');
+    clientes = data.clientes || [];
+    shows = data.shows || [];
+    abonos = data.abonos || [];
+    render();
+  }catch(err){
+    document.getElementById('contenidoLista').innerHTML = '<div class="estado-carga">No se pudo conectar con la hoja.<br>Revisa la API_URL en el código.</div>';
+    console.error(err);
+  }
+}
+
+function renderTabsClientes(){
+  const cont = document.getElementById('clientesTabs');
+  let html = `<div class="tab${clienteActivo==='todos'?' activo':''}" onclick="seleccionarCliente('todos')">Todos</div>`;
+  html += clientes.map(c => `<div class="tab${clienteActivo===c.nombre?' activo':''}" onclick="seleccionarCliente('${c.nombre.replace(/'/g,"\\'")}')">${c.nombre}</div>`).join('');
+  html += `<div class="tab nueva" onclick="abrirModalCliente()">+ Nuevo cliente</div>`;
+  cont.innerHTML = html;
+}
+
+function seleccionarCliente(nombre){
+  clienteActivo = nombre;
+  render();
+}
+
+function showsFiltrados(){
+  return clienteActivo === 'todos' ? shows : shows.filter(s => s.cliente === clienteActivo);
+}
+function abonosFiltrados(){
+  return clienteActivo === 'todos' ? abonos : abonos.filter(a => a.cliente === clienteActivo);
+}
+
+function render(){
+  renderTabsClientes();
+
+  const showsF = showsFiltrados();
+  const abonosF = abonosFiltrados();
+
+  const totalFacturado = showsF.reduce((a,b)=>a+Number(b.tarifa),0);
+  const totalAbonos = abonosF.reduce((a,b)=>a+Number(b.monto),0);
+  const deuda = totalFacturado - totalAbonos;
+
+  document.getElementById('totalFacturado').textContent = fmtMoney(totalFacturado);
+  document.getElementById('totalAbonos').textContent = fmtMoney(totalAbonos);
+  document.getElementById('totalDeuda').textContent = fmtMoney(deuda);
+  document.getElementById('deudaLabel').textContent = clienteActivo === 'todos' ? 'Deuda actual (todos)' : 'Deuda actual · ' + clienteActivo;
+
+  const btnPdf = document.getElementById('btnPdf');
+  btnPdf.style.opacity = clienteActivo === 'todos' ? '.5' : '1';
+
+  const porMes = {};
+  showsF.forEach(s => {
+    const key = mesKeyDeFecha(s.fecha);
+    if(!porMes[key]) porMes[key] = [];
+    porMes[key].push(s);
+  });
+
+  const meses = Object.keys(porMes).sort();
+  const cont = document.getElementById('contenidoLista');
+
+  if(meses.length === 0 && abonosF.length === 0){
+    cont.innerHTML = '<div class="vacio">Todavía no hay shows registrados aquí.</div>';
+    return;
+  }
+
+  let html = '';
+  meses.forEach(key => {
+    const [y,mo] = key.split('-');
+    const nombreMes = MESES[Number(mo)-1] + ' ' + y;
+    const items = porMes[key].slice().sort((a,b)=>a.fecha.localeCompare(b.fecha));
+    const subtotal = items.reduce((a,b)=>a+Number(b.tarifa),0);
+
+    html += `<div class="seccion-label">${nombreMes}</div><div class="lista">`;
+    html += items.map(m => `
+      <div class="mov">
+        <div class="izq">
+          <div class="desc">${m.lugar}${clienteActivo==='todos' ? ' · ' + m.cliente : ''}</div>
+          <div class="meta">${formatearFecha(m.fecha)}</div>
+          <div class="tags">${(m.detalle||[]).map(d=>`<span class="tag">${d}</span>`).join('')}</div>
+        </div>
+        <div class="der">
+          <div class="monto">${fmtMoney(Number(m.tarifa))}</div>
+          <button class="edit" onclick="editarShow('${m.id}')" title="Editar">✏️</button>
+          <button class="del" onclick="borrarShow('${m.id}')" title="Eliminar">🗑</button>
+        </div>
+      </div>
+    `).join('');
+    html += `</div><div class="subtotal-row"><span>Subtotal ${nombreMes}</span><span class="val">${fmtMoney(subtotal)}</span></div>`;
+  });
+
+  if(abonosF.length > 0){
+    const abonosOrd = abonosF.slice().sort((a,b)=>b.fecha.localeCompare(a.fecha));
+    html += `<div class="seccion-label">Abonos registrados</div><div class="lista">`;
+    html += abonosOrd.map(a => `
+      <div class="mov abono-mov">
+        <div class="izq">
+          <div class="desc">Abono${clienteActivo==='todos' ? ' · ' + a.cliente : ''}</div>
+          <div class="meta">${formatearFecha(a.fecha)}${a.nota ? ' · ' + a.nota : ''}</div>
+        </div>
+        <div class="der">
+          <div class="monto">-${fmtMoney(Number(a.monto))}</div>
+          <button class="del" onclick="borrarAbono('${a.id}')" title="Eliminar">🗑</button>
+        </div>
+      </div>
+    `).join('');
+    html += `</div>`;
+  }
+
+  cont.innerHTML = html;
+}
+
+// ---- Modal cliente ----
+function abrirModalCliente(){
+  document.getElementById('inNombreCliente').value = '';
+  document.getElementById('inTelCliente').value = '';
+  document.getElementById('overlayCliente').classList.add('show');
+}
+function cerrarModalCliente(){
+  document.getElementById('overlayCliente').classList.remove('show');
+}
+async function guardarCliente(){
+  const nombre = document.getElementById('inNombreCliente').value.trim();
+  const telefono = document.getElementById('inTelCliente').value.trim();
+  if(!nombre){ mostrarToast('Escribe el nombre del cliente'); return; }
+  try{
+    const res = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'addCliente', nombre, telefono})});
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error);
+    cerrarModalCliente();
+    mostrarToast('Cliente agregado');
+    await cargarDatos();
+  }catch(err){ mostrarToast('Error al guardar cliente'); console.error(err); }
+}
+
+// ---- Modal show ----
+function renderChipsClientesModal(){
+  const cont = document.getElementById('chipsClientesModal');
+  cont.innerHTML = clientes.map(c => `<button type="button" class="chip${clienteSeleccionadoModal===c.nombre?' activo':''}" onclick="seleccionarClienteModal('${c.nombre.replace(/'/g,"\\'")}')">${c.nombre}</button>`).join('')
+    + `<button type="button" class="chip nueva" onclick="cerrarModalShow(); abrirModalCliente();">+ Nuevo</button>`;
+}
+function seleccionarClienteModal(nombre){
+  clienteSeleccionadoModal = nombre;
+  renderChipsClientesModal();
+}
+function renderChipsDetalle(){
+  const cont = document.getElementById('chipsDetalle');
+  cont.innerHTML = DETALLES.map(d => `<button type="button" class="chip${detallesSeleccionados.includes(d.id)?' activo':''}" onclick="toggleDetalle('${d.id}')">${d.label} $${d.precio}</button>`).join('');
+}
+function toggleDetalle(id){
+  if(detallesSeleccionados.includes(id)){
+    detallesSeleccionados = detallesSeleccionados.filter(x=>x!==id);
+  }else{
+    detallesSeleccionados.push(id);
+  }
+  renderChipsDetalle();
+  recalcularTarifa();
+}
+function recalcularTarifa(){
+  const total = detallesSeleccionados.reduce((a,id)=> a + DETALLES.find(d=>d.id===id).precio, 0);
+  document.getElementById('inTarifa').value = total.toFixed(2);
+}
+
+function abrirModalShow(){
+  idEnEdicion = null;
+  document.getElementById('tituloModalShow').textContent = 'Nuevo show';
+  document.getElementById('inFecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('inLugar').value = '';
+  document.getElementById('inTarifa').value = '';
+  clienteSeleccionadoModal = clienteActivo !== 'todos' ? clienteActivo : '';
+  detallesSeleccionados = [];
+  renderChipsClientesModal();
+  renderChipsDetalle();
+  document.getElementById('overlayShow').classList.add('show');
+}
+function editarShow(id){
+  const m = shows.find(x=>String(x.id)===String(id));
+  if(!m) return;
+  idEnEdicion = id;
+  document.getElementById('tituloModalShow').textContent = 'Editar show';
+  document.getElementById('inFecha').value = m.fecha;
+  document.getElementById('inLugar').value = m.lugar;
+  document.getElementById('inTarifa').value = m.tarifa;
+  clienteSeleccionadoModal = m.cliente;
+  detallesSeleccionados = DETALLES.filter(d => (m.detalle||[]).some(t => t.startsWith(d.label))).map(d=>d.id);
+  renderChipsClientesModal();
+  renderChipsDetalle();
+  document.getElementById('overlayShow').classList.add('show');
+}
+function cerrarModalShow(){
+  document.getElementById('overlayShow').classList.remove('show');
+  idEnEdicion = null;
+}
+async function guardarShow(){
+  const fecha = document.getElementById('inFecha').value;
+  const lugar = document.getElementById('inLugar').value.trim();
+  const tarifa = parseFloat(document.getElementById('inTarifa').value);
+  if(!fecha || !lugar || !clienteSeleccionadoModal || !tarifa || tarifa <= 0){
+    mostrarToast('Completa fecha, lugar, cliente y tarifa');
+    return;
+  }
+  const detalleTexto = detallesSeleccionados.map(id => {
+    const d = DETALLES.find(x=>x.id===id);
+    return d.label + ' $' + d.precio;
+  });
+  const btn = document.getElementById('btnGuardarShow');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  try{
+    const res = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({
+      action: idEnEdicion ? 'editShow' : 'addShow',
+      id: idEnEdicion,
+      fecha, lugar, cliente: clienteSeleccionadoModal, detalle: detalleTexto, tarifa
+    })});
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error);
+    cerrarModalShow();
+    mostrarToast(idEnEdicion ? 'Show actualizado' : 'Show guardado');
+    await cargarDatos();
+  }catch(err){ mostrarToast('Error al guardar'); console.error(err); }
+  finally{ btn.disabled = false; btn.textContent = 'Guardar'; }
+}
+async function borrarShow(id){
+  if(!confirm('¿Eliminar este show?')) return;
+  try{
+    const res = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'deleteShow', id})});
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error);
+    mostrarToast('Eliminado');
+    await cargarDatos();
+  }catch(err){ mostrarToast('Error al eliminar'); console.error(err); }
+}
+
+// ---- Modal abono ----
+function abrirModalAbono(){
+  const sel = document.getElementById('selectClienteAbono');
+  sel.innerHTML = clientes.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
+  if(clienteActivo !== 'todos') sel.value = clienteActivo;
+  document.getElementById('inFechaAbono').value = new Date().toISOString().slice(0,10);
+  document.getElementById('inMontoAbono').value = '';
+  document.getElementById('inNotaAbono').value = '';
+  document.getElementById('overlayAbono').classList.add('show');
+}
+function cerrarModalAbono(){
+  document.getElementById('overlayAbono').classList.remove('show');
+}
+async function guardarAbono(){
+  const cliente = document.getElementById('selectClienteAbono').value;
+  const fecha = document.getElementById('inFechaAbono').value;
+  const monto = parseFloat(document.getElementById('inMontoAbono').value);
+  const nota = document.getElementById('inNotaAbono').value.trim();
+  if(!cliente || !fecha || !monto || monto <= 0){
+    mostrarToast('Completa cliente, fecha y monto');
+    return;
+  }
+  try{
+    const res = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'addAbono', cliente, fecha, monto, nota})});
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error);
+    cerrarModalAbono();
+    mostrarToast('Abono registrado');
+    await cargarDatos();
+  }catch(err){ mostrarToast('Error al guardar abono'); console.error(err); }
+}
+async function borrarAbono(id){
+  if(!confirm('¿Eliminar este abono?')) return;
+  try{
+    const res = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'deleteAbono', id})});
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error);
+    mostrarToast('Abono eliminado');
+    await cargarDatos();
+  }catch(err){ mostrarToast('Error al eliminar'); console.error(err); }
+}
+
+// ---- PDF ----
+async function generarPDF(){
+  if(clienteActivo === 'todos'){
+    mostrarToast('Elige un cliente para generar su PDF');
+    return;
+  }
+  mostrarToast('Generando PDF…');
+  try{
+    const res = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'generarPDF', cliente: clienteActivo})});
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error);
+    const cliente = clientes.find(c => c.nombre === clienteActivo);
+    const telefono = cliente && cliente.telefono ? cliente.telefono.replace(/\D/g,'') : '';
+    const mensaje = `Hola ${clienteActivo}, te comparto el reporte de shows: ${data.url}`;
+    const linkWa = 'https://wa.me/' + telefono + '?text=' + encodeURIComponent(mensaje);
+    mostrarToast('PDF listo. <a href="' + linkWa + '" target="_blank">Abrir WhatsApp</a>');
+    window.open(linkWa, '_blank');
+  }catch(err){ mostrarToast('Error al generar el PDF'); console.error(err); }
+}
+
+function mostrarToast(msg){
+  const t = document.getElementById('toast');
+  t.innerHTML = msg;
+  t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 4000);
+}
+
+// Init
+cargarDatos();
+</script>
+</body>
+</html>
