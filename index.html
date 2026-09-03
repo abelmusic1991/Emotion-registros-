@@ -170,25 +170,6 @@
   </div>
 </div>
 
-<!-- Modal nuevo cliente -->
-<div class="overlay" id="overlayCliente">
-  <div class="modal">
-    <h2>Nuevo cliente</h2>
-    <div class="campo">
-      <label>Nombre</label>
-      <input type="text" id="inNombreCliente" placeholder="Ej. Emotion">
-    </div>
-    <div class="campo">
-      <label>Teléfono WhatsApp (opcional, con código de país)</label>
-      <input type="text" id="inTelCliente" placeholder="Ej. 593987654321">
-    </div>
-    <div class="modal-btns">
-      <button class="btn-cancelar" onclick="cerrarModalCliente()">Cancelar</button>
-      <button class="btn-guardar" onclick="guardarCliente()">Agregar</button>
-    </div>
-  </div>
-</div>
-
 <!-- Modal abono -->
 <div class="overlay" id="overlayAbono">
   <div class="modal">
@@ -272,7 +253,6 @@ function renderTabsClientes(){
   const cont = document.getElementById('clientesTabs');
   let html = `<div class="tab${clienteActivo==='todos'?' activo':''}" onclick="seleccionarCliente('todos')">Todos</div>`;
   html += clientes.map(c => `<div class="tab${clienteActivo===c.nombre?' activo':''}" onclick="seleccionarCliente('${c.nombre.replace(/'/g,"\\'")}')">${c.nombre}</div>`).join('');
-  html += `<div class="tab nueva" onclick="abrirModalCliente()">+ Nuevo cliente</div>`;
   cont.innerHTML = html;
 }
 
@@ -367,34 +347,10 @@ function render(){
   cont.innerHTML = html;
 }
 
-// ---- Modal cliente ----
-function abrirModalCliente(){
-  document.getElementById('inNombreCliente').value = '';
-  document.getElementById('inTelCliente').value = '';
-  document.getElementById('overlayCliente').classList.add('show');
-}
-function cerrarModalCliente(){
-  document.getElementById('overlayCliente').classList.remove('show');
-}
-async function guardarCliente(){
-  const nombre = document.getElementById('inNombreCliente').value.trim();
-  const telefono = document.getElementById('inTelCliente').value.trim();
-  if(!nombre){ mostrarToast('Escribe el nombre del cliente'); return; }
-  try{
-    const res = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'addCliente', nombre, telefono})});
-    const data = await res.json();
-    if(!data.ok) throw new Error(data.error);
-    cerrarModalCliente();
-    mostrarToast('Cliente agregado');
-    await cargarDatos();
-  }catch(err){ mostrarToast('Error al guardar cliente'); console.error(err); }
-}
-
 // ---- Modal show ----
 function renderChipsClientesModal(){
   const cont = document.getElementById('chipsClientesModal');
-  cont.innerHTML = clientes.map(c => `<button type="button" class="chip${clienteSeleccionadoModal===c.nombre?' activo':''}" onclick="seleccionarClienteModal('${c.nombre.replace(/'/g,"\\'")}')">${c.nombre}</button>`).join('')
-    + `<button type="button" class="chip nueva" onclick="cerrarModalShow(); abrirModalCliente();">+ Nuevo</button>`;
+  cont.innerHTML = clientes.map(c => `<button type="button" class="chip${clienteSeleccionadoModal===c.nombre?' activo':''}" onclick="seleccionarClienteModal('${c.nombre.replace(/'/g,"\\'")}')">${c.nombre}</button>`).join('');
 }
 function seleccionarClienteModal(nombre){
   clienteSeleccionadoModal = nombre;
