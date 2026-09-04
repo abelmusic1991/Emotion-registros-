@@ -152,10 +152,6 @@
       <input type="text" id="inLugar" placeholder="Ej. Hotel Hilton Colón">
     </div>
     <div class="campo">
-      <label>Cliente</label>
-      <div id="chipsClientesModal" class="chips"></div>
-    </div>
-    <div class="campo">
       <label>Detalle</label>
       <div id="chipsDetalle" class="chips"></div>
     </div>
@@ -348,14 +344,6 @@ function render(){
 }
 
 // ---- Modal show ----
-function renderChipsClientesModal(){
-  const cont = document.getElementById('chipsClientesModal');
-  cont.innerHTML = clientes.map(c => `<button type="button" class="chip${clienteSeleccionadoModal===c.nombre?' activo':''}" onclick="seleccionarClienteModal('${c.nombre.replace(/'/g,"\\'")}')">${c.nombre}</button>`).join('');
-}
-function seleccionarClienteModal(nombre){
-  clienteSeleccionadoModal = nombre;
-  renderChipsClientesModal();
-}
 function renderChipsDetalle(){
   const cont = document.getElementById('chipsDetalle');
   cont.innerHTML = DETALLES.map(d => `<button type="button" class="chip${detallesSeleccionados.includes(d.id)?' activo':''}" onclick="toggleDetalle('${d.id}')">${d.label} $${d.precio}</button>`).join('');
@@ -380,9 +368,8 @@ function abrirModalShow(){
   document.getElementById('inFecha').value = new Date().toISOString().slice(0,10);
   document.getElementById('inLugar').value = '';
   document.getElementById('inTarifa').value = '';
-  clienteSeleccionadoModal = clienteActivo !== 'todos' ? clienteActivo : '';
+  clienteSeleccionadoModal = clienteActivo !== 'todos' ? clienteActivo : 'General';
   detallesSeleccionados = [];
-  renderChipsClientesModal();
   renderChipsDetalle();
   document.getElementById('overlayShow').classList.add('show');
 }
@@ -394,9 +381,8 @@ function editarShow(id){
   document.getElementById('inFecha').value = m.fecha;
   document.getElementById('inLugar').value = m.lugar;
   document.getElementById('inTarifa').value = m.tarifa;
-  clienteSeleccionadoModal = m.cliente;
+  clienteSeleccionadoModal = m.cliente || 'General';
   detallesSeleccionados = DETALLES.filter(d => (m.detalle||[]).some(t => t.startsWith(d.label))).map(d=>d.id);
-  renderChipsClientesModal();
   renderChipsDetalle();
   document.getElementById('overlayShow').classList.add('show');
 }
@@ -408,8 +394,9 @@ async function guardarShow(){
   const fecha = document.getElementById('inFecha').value;
   const lugar = document.getElementById('inLugar').value.trim();
   const tarifa = parseFloat(document.getElementById('inTarifa').value);
-  if(!fecha || !lugar || !clienteSeleccionadoModal || !tarifa || tarifa <= 0){
-    mostrarToast('Completa fecha, lugar, cliente y tarifa');
+  if(!clienteSeleccionadoModal) clienteSeleccionadoModal = 'General';
+  if(!fecha || !lugar || !tarifa || tarifa <= 0){
+    mostrarToast('Completa fecha, lugar y tarifa');
     return;
   }
   const detalleTexto = detallesSeleccionados.map(id => {
